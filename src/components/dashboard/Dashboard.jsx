@@ -1,6 +1,5 @@
-// components/dashboard/Dashboard.jsx
 import React from 'react';
-import { Target, CheckCircle, BookOpen, Activity, Calendar, TrendingUp, Edit3, ChevronRight } from 'lucide-react';
+import { Target, CheckCircle, BookOpen, Activity, Calendar, TrendingUp, Edit3, ChevronRight, Settings, UploadCloud } from 'lucide-react';
 import MetricCard from '../common/MetricCard';
 import { getCurrentDate, calculateRiskReward } from '../../utils/calculations';
 
@@ -34,7 +33,12 @@ const Dashboard = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 relative">
+      {/* Profile Icon */}
+      <div className="absolute top-0 right-0 m-4 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => handleModuleChange('settings')}>
+        <Settings className="h-6 w-6 text-gray-600" />
+      </div>
+
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
@@ -171,6 +175,14 @@ const Dashboard = ({
             <p className="text-sm font-medium text-orange-800">Performance</p>
           </button>
         </div>
+      </div>
+
+      {/* Import Trades Placeholder */}
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        <h3 className="text-lg font-semibold mb-2 flex items-center">
+          <UploadCloud className="h-5 w-5 text-gray-500 mr-2" /> Import Trades
+        </h3>
+        <p className="text-sm text-gray-600">Upload your trade history or connect to your broker account (coming soon).</p>
       </div>
     </div>
   );
