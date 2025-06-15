@@ -1,6 +1,7 @@
-// components/performance/Performance.jsx
 import React from 'react';
 import { DollarSign, Target, TrendingUp, Activity } from 'lucide-react';
+import SymbolPerformance from './SymbolPerformance';
+import TradingInsights from './TradingInsights';
 
 const Performance = ({ trades }) => {
   const totalTrades = trades.length;
@@ -13,6 +14,21 @@ const Performance = ({ trades }) => {
   const avgLoss = losingTrades > 0 ? Math.abs(trades.filter(t => t.outcome === 'loss').reduce((sum, t) => sum + t.pnl, 0) / losingTrades) : 0;
   const profitFactor = avgLoss > 0 ? (avgWin / avgLoss).toFixed(2) : '0.00';
 
+  const insights = {
+    strengths: [
+      `Good win rate (${winRate}%)`,
+      'Profitable overall',
+      'Consistent risk management',
+      'Good R/R ratios',
+    ],
+    improvements: [
+      'Reduce position size on earnings plays',
+      'Better entry timing on momentum trades',
+      'Consider scaling into positions',
+      'Monitor overnight risk exposure',
+    ]
+  };
+
   return (
     <div className="space-y-6">
       {/* Key Metrics */}
@@ -23,22 +39,19 @@ const Performance = ({ trades }) => {
         <MetricCard title="Total Trades" value={totalTrades} sub="This period" icon={<Activity />} highlight="orange" />
       </div>
 
-      {/* Detailed Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold mb-4">Trade Breakdown</h3>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Average Win:</span>
-              <span className="font-medium text-green-600">+${avgWin.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">Average Loss:</span>
-              <span className="font-medium text-red-600">-${avgLoss.toFixed(2)}</span>
-            </div>
-          </div>
+      {/* Trade Breakdown */}
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        <h3 className="text-lg font-semibold mb-4">Trade Breakdown</h3>
+        <div className="space-y-4">
+          <BreakdownItem label="Average Win" value={`+$${avgWin.toFixed(2)}`} positive />
+          <BreakdownItem label="Average Loss" value={`-$${avgLoss.toFixed(2)}`} />
+          <BreakdownItem label="Largest Win" value={`+$${Math.max(...trades.map(t => t.pnl || 0)).toFixed(2)}`} positive />
+          <BreakdownItem label="Largest Loss" value={`-$${Math.abs(Math.min(...trades.map(t => t.pnl || 0))).toFixed(2)}`} />
         </div>
       </div>
+
+      <SymbolPerformance trades={trades} />
+      <TradingInsights insights={insights} />
     </div>
   );
 };
@@ -53,6 +66,13 @@ const MetricCard = ({ title, value, sub, icon, highlight }) => (
       </div>
       <div className={`text-${highlight}-500 h-8 w-8`}>{icon}</div>
     </div>
+  </div>
+);
+
+const BreakdownItem = ({ label, value, positive }) => (
+  <div className="flex justify-between items-center">
+    <span className="text-gray-600">{label}:</span>
+    <span className={`font-medium ${positive ? 'text-green-600' : 'text-red-600'}`}>{value}</span>
   </div>
 );
 
