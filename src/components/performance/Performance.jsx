@@ -74,4 +74,13 @@ const Performance = ({ trades }) => {
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-600">Average Loss:</span>
+              <span className="font-medium text-red-600">-${avgLoss.toFixed(2)}</span>
+</div>
+</div>
+</div>
+</div>
+);
+};
+
+export default Performance;
               
