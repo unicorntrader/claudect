@@ -1,5 +1,7 @@
+// /components/dashboard/Dashboard.jsx
 import React from 'react';
-import { Target, CheckCircle, BookOpen, Activity, Calendar, TrendingUp, Edit3, ChevronRight, Settings, UploadCloud } from 'lucide-react';
+import { Target, CheckCircle, BookOpen, Activity, Calendar, TrendingUp, Edit3 } from 'lucide-react';
+import { UserCircle } from 'lucide-react';
 import MetricCard from '../common/MetricCard';
 import { getCurrentDate, calculateRiskReward } from '../../utils/calculations';
 
@@ -33,156 +35,95 @@ const Dashboard = ({
   };
 
   return (
-    <div className="space-y-6 relative">
-      {/* Profile Icon */}
-      <div className="absolute top-0 right-0 m-4 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => handleModuleChange('settings')}>
-        <Settings className="h-6 w-6 text-gray-600" />
+    <div className="space-y-6">
+      {/* Header with Date and Profile Icon */}
+      <div className="flex justify-between items-center">
+        <div className="text-sm text-gray-500">{getCurrentDate()}</div>
+        <UserCircle className="w-6 h-6 text-gray-600 cursor-pointer" />
       </div>
 
       {/* Metrics Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
           title="Active Plans"
-          value={tradePlans.filter(p => p.status === 'planned').length}
-          icon={Target}
-          color="blue"
+          value={tradePlans.length}
+          icon={<Target className="w-5 h-5" />}
           onClick={() => handleMetricClick('active-plans')}
         />
         <MetricCard
           title="Executed Trades"
           value={trades.length}
-          icon={CheckCircle}
-          color="green"
+          icon={<CheckCircle className="w-5 h-5" />}
           onClick={() => handleMetricClick('executed-trades')}
         />
         <MetricCard
           title="Journal Entries"
-          value={Object.keys(notes).length}
-          icon={BookOpen}
-          color="purple"
+          value={notes.length}
+          icon={<BookOpen className="w-5 h-5" />}
           onClick={() => handleMetricClick('journal-entries')}
         />
         <MetricCard
           title="Today's Activity"
-          value={tradePlans.filter(p => p.timestamp.startsWith(getCurrentDate())).length}
-          icon={Activity}
-          color="orange"
+          value={activities.length}
+          icon={<Activity className="w-5 h-5" />}
           onClick={() => handleMetricClick('today-activity')}
         />
       </div>
 
-      {/* Recent Plans and Activity Feed */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 
-            className="text-lg font-semibold mb-4 cursor-pointer hover:text-blue-600 transition-colors flex items-center justify-between group"
-            onClick={() => handleModuleChange('plan-trader')}
-          >
-            Recent Trade Plans
-            <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-blue-500 transition-colors" />
-          </h3>
-          <div className="space-y-3">
-            {tradePlans.slice(-5).map(plan => (
-              <div 
-                key={plan.id} 
-                className={`flex items-center justify-between p-3 rounded cursor-pointer hover:bg-blue-50 transition-colors ${
-                  highlightedItem === plan.id ? 'bg-blue-100 border border-blue-300' : 'bg-gray-50'
-                }`}
-                onClick={() => handlePlanClick(plan.id)}
-              >
+      {/* Recent Trade Plans and Activity Feed */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="bg-white rounded-lg p-4 shadow">
+          <h2 className="text-lg font-semibold mb-2">Recent Trade Plans</h2>
+          <ul className="divide-y divide-gray-200">
+            {tradePlans.map((plan, index) => (
+              <li key={index} className="py-2 flex justify-between items-center">
                 <div>
-                  <span className="font-medium">{plan.ticker}</span>
-                  <span className={`ml-2 px-2 py-1 text-xs rounded ${
-                    plan.status === 'executed' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
-                  }`}>
-                    {plan.status}
+                  <span className="font-medium cursor-pointer text-blue-600" onClick={() => handlePlanClick(plan)}>
+                    {plan.symbol}
                   </span>
+                  <span className="ml-2 text-xs text-gray-500 bg-blue-100 px-2 py-1 rounded">planned</span>
                 </div>
-                <div className="text-sm text-gray-600">
-                  R/R: {calculateRiskReward(plan.entry, plan.target, plan.stopLoss, plan.position).ratio}
-                </div>
-              </div>
+                <div className="text-sm text-gray-600">R/R: {calculateRiskReward(plan)}</div>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 className="text-lg font-semibold mb-4">Activity Feed</h3>
-          <div className="space-y-3">
-            {activities.slice(0, 6).map(activity => (
-              <div 
-                key={activity.id} 
-                className="flex items-start space-x-3 p-2 rounded cursor-pointer hover:bg-gray-50 transition-colors group"
-                onClick={() => handleActivityClick(activity)}
-              >
-                <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
-                  activity.type === 'plan' ? 'bg-blue-500' :
-                  activity.type === 'trade' ? 'bg-green-500' :
-                  activity.type === 'note' ? 'bg-purple-500' :
-                  activity.type === 'system' ? 'bg-orange-500' :
-                  'bg-gray-500'
-                }`} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-900 group-hover:text-blue-600 transition-colors">
-                    {activity.message}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {new Date(activity.timestamp).toLocaleString([], {
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </p>
-                </div>
-                <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
-              </div>
+        <div className="bg-white rounded-lg p-4 shadow">
+          <h2 className="text-lg font-semibold mb-2">Activity Feed</h2>
+          <ul className="space-y-2 text-sm">
+            {activities.map((activity, index) => (
+              <li key={index} className="flex items-start space-x-2 cursor-pointer" onClick={() => handleActivityClick(activity)}>
+                <span className="w-2 h-2 mt-1 rounded-full bg-blue-500"></span>
+                <div>{activity.text}</div>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={() => handleModuleChange('plan-trader')}
-            className="p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
-          >
-            <Target className="h-6 w-6 text-blue-600 mx-auto mb-2" />
-            <p className="text-sm font-medium text-blue-800">New Plan</p>
-          </button>
-          <button
-            onClick={() => handleModuleChange('notebook')}
-            className="p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
-          >
-            <Edit3 className="h-6 w-6 text-purple-600 mx-auto mb-2" />
-            <p className="text-sm font-medium text-purple-800">Add Note</p>
-          </button>
-          <button
-            onClick={() => handleModuleChange('daily-view')}
-            className="p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
-          >
-            <Calendar className="h-6 w-6 text-green-600 mx-auto mb-2" />
-            <p className="text-sm font-medium text-green-800">Daily View</p>
-          </button>
-          <button
-            onClick={() => handleModuleChange('performance')}
-            className="p-4 bg-orange-50 rounded-lg hover:bg-orange-100 transition-colors"
-          >
-            <TrendingUp className="h-6 w-6 text-orange-600 mx-auto mb-2" />
-            <p className="text-sm font-medium text-orange-800">Performance</p>
-          </button>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
+        <div className="bg-blue-50 p-4 rounded-lg text-center cursor-pointer hover:bg-blue-100" onClick={() => handleModuleChange('plan-trader')}>
+          <Target className="mx-auto mb-2" />
+          New Plan
+        </div>
+        <div className="bg-green-50 p-4 rounded-lg text-center cursor-pointer hover:bg-green-100" onClick={() => handleModuleChange('daily-view')}>
+          <Calendar className="mx-auto mb-2" />
+          Daily View
+        </div>
+        <div className="bg-purple-50 p-4 rounded-lg text-center cursor-pointer hover:bg-purple-100" onClick={() => handleModuleChange('notebook')}>
+          <Edit3 className="mx-auto mb-2" />
+          Add Note
+        </div>
+        <div className="bg-orange-50 p-4 rounded-lg text-center cursor-pointer hover:bg-orange-100" onClick={() => handleModuleChange('performance-review')}>
+          <TrendingUp className="mx-auto mb-2" />
+          Performance
         </div>
       </div>
 
-      {/* Import Trades Placeholder */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
-        <h3 className="text-lg font-semibold mb-2 flex items-center">
-          <UploadCloud className="h-5 w-5 text-gray-500 mr-2" /> Import Trades
-        </h3>
-        <p className="text-sm text-gray-600">Upload your trade history or connect to your broker account (coming soon).</p>
+      {/* Import Section */}
+      <div className="mt-8 p-4 bg-gray-50 border border-dashed border-gray-300 rounded text-center text-sm text-gray-600">
+        <p>Upload your trade history or connect to your broker account (coming soon).</p>
       </div>
     </div>
   );
