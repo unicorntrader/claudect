@@ -1,15 +1,20 @@
 // /components/dashboard/Dashboard.jsx
 import React from 'react';
-import { Target, CheckCircle, BookOpen, Activity, Calendar, TrendingUp, Edit3 } from 'lucide-react';
-import { UserCircle } from 'lucide-react';
+import { Target, CheckCircle, BookOpen, Activity, Calendar, TrendingUp, Edit3, User } from 'lucide-react';
 import MetricCard from '../common/MetricCard';
-import { getCurrentDate, calculateRiskReward } from '../../utils/calculations';
+
+const getCurrentDate = () => new Date().toLocaleDateString('en-US', {
+  weekday: 'long',
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric'
+});
 
 const Dashboard = ({ 
-  tradePlans, 
-  trades, 
-  notes, 
-  activities, 
+  tradePlans = [], 
+  trades = [], 
+  notes = [], 
+  activities = [], 
   highlightedItem, 
   handleActivityClick, 
   handlePlanClick, 
@@ -39,7 +44,7 @@ const Dashboard = ({
       {/* Header with Date and Profile Icon */}
       <div className="flex justify-between items-center">
         <div className="text-sm text-gray-500">{getCurrentDate()}</div>
-        <UserCircle className="w-6 h-6 text-gray-600 cursor-pointer" />
+        <User className="w-6 h-6 text-gray-600 cursor-pointer" />
       </div>
 
       {/* Metrics Grid */}
@@ -83,7 +88,7 @@ const Dashboard = ({
                   </span>
                   <span className="ml-2 text-xs text-gray-500 bg-blue-100 px-2 py-1 rounded">planned</span>
                 </div>
-                <div className="text-sm text-gray-600">R/R: {calculateRiskReward(plan)}</div>
+                <div className="text-sm text-gray-600">R/R: {plan.riskReward || '-'}</div>
               </li>
             ))}
           </ul>
