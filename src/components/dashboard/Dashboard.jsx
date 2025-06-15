@@ -1,5 +1,5 @@
 import React from 'react';
-import { Target, CheckCircle, BookOpen, Activity, Calendar, TrendingUp, Edit3, ChevronRight, Settings, UploadCloud } from 'lucide-react';
+import { Target, CheckCircle, BookOpen, Activity, Calendar, TrendingUp, Edit3, ChevronRight, UploadCloud } from 'lucide-react';
 import MetricCard from '../common/MetricCard';
 import { getCurrentDate, calculateRiskReward } from '../../utils/calculations';
 
@@ -33,12 +33,7 @@ const Dashboard = ({
   };
 
   return (
-    <div className="space-y-6 relative">
-      {/* Profile Icon */}
-      <div className="absolute top-0 right-0 m-4 cursor-pointer hover:text-blue-600 transition-colors" onClick={() => handleModuleChange('settings')}>
-        <Settings className="h-6 w-6 text-gray-600" />
-      </div>
-
+    <div className="space-y-6">
       {/* Metrics Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
