@@ -1,50 +1,23 @@
+// 📁 src/components/journal/SmartJournal.jsx
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, X } from 'lucide-react';
 
-// 🔧 TEMPORARY MOCK DATA (delete after backend integration)
-const mockTrades = [
-  {
-    id: "T001",
-    date: "2025-06-15",
-    symbol: "AAPL",
-    strategy: "Breakout",
-    tags: ["Gap Up", "Volume Spike"],
-    outcome: "Win",
-    rr: 2.5,
-    adherence: 88.5,
-    plan: { entry: 192, stop: 190, target: 197, size: 100 },
-    exec: { entry: 192.5, exit: 196.5, size: 100 }
-  },
-  {
-    id: "T002",
-    date: "2025-06-14",
-    symbol: "TSLA",
-    strategy: "Mean Reversion",
-    tags: ["Oversold", "RSI"],
-    outcome: "Loss",
-    rr: 1.2,
-    adherence: 62,
-    plan: { entry: 170, stop: 165, target: 180, size: 50 },
-    exec: { entry: 171, exit: 166, size: 50 }
-  }
-];
-
-const SmartJournal = () => {
+const SmartJournal = ({ trades = [] }) => {
   const [selectedTrade, setSelectedTrade] = useState(null);
-  const trades = mockTrades;
 
   const renderOutcome = (outcome) => (
-    <span className={\`px-2 py-0.5 rounded text-xs font-medium \${outcome === 'Win' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}\`}>{outcome}</span>
+    <span className={`px-2 py-0.5 rounded text-xs font-medium ${outcome === 'Win' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{outcome}</span>
   );
 
   const renderAdherence = (score) => (
-    <span className={\`text-sm font-semibold \${score >= 75 ? 'text-green-600' : score >= 50 ? 'text-yellow-600' : 'text-red-600'}\`}>{score}%</span>
+    <span className={`text-sm font-semibold ${score >= 75 ? 'text-green-600' : score >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>{score}%</span>
   );
 
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Smart Journal</h1>
 
+      {/* Trade Table */}
       <div className="bg-white rounded-lg shadow overflow-x-auto">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50 text-gray-700">
@@ -61,7 +34,7 @@ const SmartJournal = () => {
           <tbody>
             {trades.length === 0 && (
               <tr>
-                <td colSpan={7} className="text-center py-8 text-gray-500">No trades yet &mdash; import history or plan a trade.</td>
+                <td colSpan={7} className="text-center py-8 text-gray-500">No trades yet — import history or plan a trade.</td>
               </tr>
             )}
 
@@ -87,23 +60,48 @@ const SmartJournal = () => {
         </table>
       </div>
 
+      {/* Plan-vs-Reality Drill-down */}
       {selectedTrade && (
         <div className="bg-white rounded-lg shadow p-6 relative">
           <button className="absolute top-3 right-3" onClick={() => setSelectedTrade(null)}>
             <X className="h-5 w-5 text-gray-400 hover:text-gray-600" />
           </button>
 
-          <h2 className="text-lg font-semibold mb-4">Plan vs Reality &mdash; {selectedTrade.symbol}</h2>
+          <h2 className="text-lg font-semibold mb-4">Plan vs Reality — {selectedTrade.symbol}</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div><p className="text-gray-500">Planned Entry</p><p>{selectedTrade.plan?.entry ?? '-'}</p></div>
-            <div><p className="text-gray-500">Actual Entry</p><p>{selectedTrade.exec?.entry ?? '-'}</p></div>
-            <div><p className="text-gray-500">Planned Stop</p><p>{selectedTrade.plan?.stop ?? '-'}</p></div>
-            <div><p className="text-gray-500">Actual Stop</p><p>{selectedTrade.exec?.stop ?? '-'}</p></div>
-            <div><p className="text-gray-500">Planned Target</p><p>{selectedTrade.plan?.target ?? '-'}</p></div>
-            <div><p className="text-gray-500">Actual Exit</p><p>{selectedTrade.exec?.exit ?? '-'}</p></div>
-            <div><p className="text-gray-500">Planned Size</p><p>{selectedTrade.plan?.size ?? '-'}</p></div>
-            <div><p className="text-gray-500">Filled Size</p><p>{selectedTrade.exec?.size ?? '-'}</p></div>
+            <div>
+              <p className="text-gray-500">Planned Entry</p>
+              <p>{selectedTrade.plan?.entry ?? '-'}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">Actual Entry</p>
+              <p>{selectedTrade.exec?.entry ?? '-'}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">Planned Stop</p>
+              <p>{selectedTrade.plan?.stop ?? '-'}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">Actual Stop</p>
+              <p>{selectedTrade.exec?.stop ?? '-'}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">Planned Target</p>
+              <p>{selectedTrade.plan?.target ?? '-'}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">Actual Exit</p>
+              <p>{selectedTrade.exec?.exit ?? '-'}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">Planned Size</p>
+              <p>{selectedTrade.plan?.size ?? '-'}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">Filled Size</p>
+              <p>{selectedTrade.exec?.size ?? '-'}</p>
+            </div>
           </div>
 
           <div className="mt-6 text-right">
