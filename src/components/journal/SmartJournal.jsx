@@ -1,98 +1,129 @@
-import React, { useState } from 'react';
+// 📁 src/components/journal/SmartJournal.jsx
+// Smart Journal MVP – displays trades, tagging, and plan-vs-reality drill-down
+// Props: `trades` – array of trade objects (see mock schema below)
+// ---------------------------------------------------------------------------
+// Mock trade object shape (for reference)
+// {
+//   id: "T001",
+//   date: "2025-06-15",
+//   symbol: "AAPL",
+//   strategy: "Breakout",
+//   tags: ["Gap Up", "Volume Spike"],
+//   outcome: "Win" | "Loss",
+//   rr: 2.5,                 // risk-to-reward
+//   adherence: 88.5,         // %
+//   plan: { entry, stop, target, size },
+//   exec: { entry, exit, size }
+// }
+// ---------------------------------------------------------------------------
 
-const SmartJournal = () => {
-  const [trades, setTrades] = useState([]);
+import React, { useState } from 'react';
+import { ChevronDown, ChevronRight, X } from 'lucide-react';
+
+const SmartJournal = ({ trades = [] }) => {
   const [selectedTrade, setSelectedTrade] = useState(null);
+
+  const renderOutcome = (outcome) => (
+    <span className={`px-2 py-0.5 rounded text-xs font-medium ${outcome === 'Win' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>{outcome}</span>
+  );
+
+  const renderAdherence = (score) => (
+    <span className={`text-sm font-semibold ${score >= 75 ? 'text-green-600' : score >= 50 ? 'text-yellow-600' : 'text-red-600'}`}>{score}%</span>
+  );
 
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Smart Journal</h1>
-      <p className="text-gray-600 max-w-xl">
-        This module allows you to tag, view, and analyze your trades with full plan-vs-reality breakdowns, adherence scoring, and performance insights.
-      </p>
 
-      {/* Table View */}
-      <div className="bg-white rounded-lg shadow p-4 overflow-x-auto">
-        <table className="min-w-full text-sm text-left">
-          <thead className="border-b text-gray-700">
+      {/* Trade Table */}
+      <div className="bg-white rounded-lg shadow overflow-x-auto">
+        <table className="min-w-full text-sm">
+          <thead className="bg-gray-50 text-gray-700">
             <tr>
-              <th className="px-4 py-2">Date</th>
-              <th className="px-4 py-2">Ticker</th>
-              <th className="px-4 py-2">Tags</th>
-              <th className="px-4 py-2">R/R</th>
-              <th className="px-4 py-2">Win/Loss</th>
-              <th className="px-4 py-2">Adherence</th>
-              <th className="px-4 py-2">Actions</th>
+              <th className="px-4 py-2 text-left">Date</th>
+              <th className="px-4 py-2 text-left">Symbol</th>
+              <th className="px-4 py-2 text-left">Strategy / Tags</th>
+              <th className="px-4 py-2 text-left">R/R</th>
+              <th className="px-4 py-2 text-left">Outcome</th>
+              <th className="px-4 py-2 text-left">Adh.</th>
+              <th className="px-4 py-2 text-left">&nbsp;</th>
             </tr>
           </thead>
           <tbody>
-            {trades.length === 0 ? (
+            {trades.length === 0 && (
               <tr>
-                <td colSpan="7" className="text-center text-gray-500 py-6">
-                  No trades logged yet. Import history or start planning trades.
+                <td colSpan={7} className="text-center py-8 text-gray-500">No trades yet &mdash; import history or plan a trade.</td>
+              </tr>
+            )}
+
+            {trades.map((t) => (
+              <tr key={t.id} className="border-b hover:bg-gray-50">
+                <td className="px-4 py-2 whitespace-nowrap">{t.date}</td>
+                <td className="px-4 py-2 font-medium">{t.symbol}</td>
+                <td className="px-4 py-2">
+                  <span className="font-semibold mr-1">{t.strategy}</span>
+                  <span className="text-xs text-gray-500">{t.tags?.join(', ')}</span>
+                </td>
+                <td className="px-4 py-2">{t.rr}</td>
+                <td className="px-4 py-2">{renderOutcome(t.outcome)}</td>
+                <td className="px-4 py-2">{renderAdherence(t.adherence)}</td>
+                <td className="px-2 py-2 text-right">
+                  <button onClick={() => setSelectedTrade(t)} className="text-blue-600 hover:text-blue-800 flex items-center">
+                    {selectedTrade?.id === t.id ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                  </button>
                 </td>
               </tr>
-            ) : (
-              trades.map((trade, index) => (
-                <tr key={index} className="border-b hover:bg-gray-50">
-                  <td className="px-4 py-2">{trade.date}</td>
-                  <td className="px-4 py-2 font-medium">{trade.ticker}</td>
-                  <td className="px-4 py-2">{trade.tags?.join(', ')}</td>
-                  <td className="px-4 py-2">{trade.rr}</td>
-                  <td className="px-4 py-2">{trade.outcome}</td>
-                  <td className="px-4 py-2">{trade.adherence}%</td>
-                  <td className="px-4 py-2">
-                    <button 
-                      className="text-blue-600 hover:underline"
-                      onClick={() => setSelectedTrade(trade)}
-                    >
-                      View
-                    </button>
-                  </td>
-                </tr>
-              ))
-            )}
+            ))}
           </tbody>
         </table>
       </div>
 
-      {/* Plan vs Reality Panel */}
+      {/* Plan-vs-Reality Drill-down */}
       {selectedTrade && (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-4">Plan vs Reality</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-white rounded-lg shadow p-6 relative">
+          <button className="absolute top-3 right-3" onClick={() => setSelectedTrade(null)}>
+            <X className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+          </button>
+
+          <h2 className="text-lg font-semibold mb-4">Plan vs Reality &mdash; {selectedTrade.symbol}</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-sm text-gray-500">Planned Entry</p>
-              <p className="text-base">{selectedTrade.planEntry}</p>
+              <p className="text-gray-500">Planned Entry</p>
+              <p>{selectedTrade.plan?.entry ?? '-'}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Actual Entry</p>
-              <p className="text-base">{selectedTrade.actualEntry}</p>
+              <p className="text-gray-500">Actual Entry</p>
+              <p>{selectedTrade.exec?.entry ?? '-'}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Planned Stop</p>
-              <p className="text-base">{selectedTrade.planStop}</p>
+              <p className="text-gray-500">Planned Stop</p>
+              <p>{selectedTrade.plan?.stop ?? '-'}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Actual Stop</p>
-              <p className="text-base">{selectedTrade.actualStop}</p>
+              <p className="text-gray-500">Actual Stop</p>
+              <p>{selectedTrade.exec?.stop ?? '-'}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Planned Target</p>
-              <p className="text-base">{selectedTrade.planTarget}</p>
+              <p className="text-gray-500">Planned Target</p>
+              <p>{selectedTrade.plan?.target ?? '-'}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">Actual Target</p>
-              <p className="text-base">{selectedTrade.actualTarget}</p>
+              <p className="text-gray-500">Actual Exit</p>
+              <p>{selectedTrade.exec?.exit ?? '-'}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">Planned Size</p>
+              <p>{selectedTrade.plan?.size ?? '-'}</p>
+            </div>
+            <div>
+              <p className="text-gray-500">Filled Size</p>
+              <p>{selectedTrade.exec?.size ?? '-'}</p>
             </div>
           </div>
+
           <div className="mt-6 text-right">
-            <button 
-              className="px-4 py-2 text-sm bg-gray-100 rounded hover:bg-gray-200"
-              onClick={() => setSelectedTrade(null)}
-            >
-              Close
-            </button>
+            <button onClick={() => setSelectedTrade(null)} className="px-4 py-2 bg-gray-100 rounded hover:bg-gray-200 text-sm">Close</button>
           </div>
         </div>
       )}
