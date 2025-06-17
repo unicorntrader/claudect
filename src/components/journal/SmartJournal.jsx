@@ -14,7 +14,7 @@ const mockTrades = [
     plan: { entry: 175, stop: 170, target: 185, size: 10 },
     exec: { entry: 176, exit: 184, size: 10 },
     pnl: 80,
-    holdTime: 4.2, // hours
+    holdTime: 4.2,
     notes: "Strong momentum play, slight slippage on entry but good execution overall",
     timeBucket: "NY-Open"
   },
@@ -25,7 +25,7 @@ const mockTrades = [
     strategy: "Mean Reversion",
     tags: ["Oversold", "Counter-trend"],
     outcome: "Loss",
-    rr: 1.2,
+    rr: -1.2,
     adherence: 61,
     plan: { entry: 210, stop: 200, target: 230, size: 8 },
     exec: { entry: 211, exit: 201, size: 8 },
@@ -73,7 +73,7 @@ const mockTrades = [
     strategy: "Mean Reversion",
     tags: ["Oversold", "Counter-trend"],
     outcome: "Loss",
-    rr: 0.8,
+    rr: -0.8,
     adherence: 45,
     plan: { entry: 485, stop: 480, target: 495, size: 6 },
     exec: { entry: 487, exit: 481, size: 8 },
@@ -137,7 +137,7 @@ const SmartJournal = () => {
   // Generate insights based on last trades
   const generateInsights = useMemo(() => {
     const insights = [];
-    const recentTrades = mockTrades.slice(0, 50); // Last 50 trades
+    const recentTrades = mockTrades.slice(0, 50);
     
     // Strategy performance analysis
     const strategyStats = {};
@@ -208,8 +208,6 @@ const SmartJournal = () => {
     return insights;
   }, []);
 
-
-
   // Filter trades
   const filteredTrades = useMemo(() => {
     return mockTrades.filter(trade => {
@@ -271,8 +269,6 @@ const SmartJournal = () => {
         </div>
       </div>
 
-
-
       {/* Filters */}
       {showFilters && (
         <div className="bg-white rounded-lg shadow p-4">
@@ -333,7 +329,7 @@ const SmartJournal = () => {
               <th className="px-4 py-3 text-left">Date</th>
               <th className="px-4 py-3 text-left">Symbol</th>
               <th className="px-4 py-3 text-left">Strategy / Tags</th>
-              <th className="px-4 py-3 text-left">R/R</th>
+              <th className="px-4 py-3 text-left">R Multi</th>
               <th className="px-4 py-3 text-left">P&L</th>
               <th className="px-4 py-3 text-left">Hold</th>
               <th className="px-4 py-3 text-left">Outcome</th>
@@ -361,7 +357,7 @@ const SmartJournal = () => {
                     </div>
                   </div>
                 </td>
-                <td className="px-4 py-3">{trade.rr}</td>
+                <td className="px-4 py-3">{trade.rr}R</td>
                 <td className="px-4 py-3">
                   <span className={`font-medium ${trade.pnl > 0 ? 'text-green-600' : 'text-red-600'}`}>
                     ${trade.pnl > 0 ? '+' : ''}{trade.pnl}
@@ -453,6 +449,31 @@ const SmartJournal = () => {
               </div>
             </div>
 
+            {/* Trade Statistics */}
+            <div className="mb-6">
+              <h3 className="font-medium mb-3">Trade Statistics</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div className="space-y-1">
+                  <p className="text-gray-500">Hold Time</p>
+                  <p className="font-medium">{selectedTrade.holdTime}h</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-gray-500">Time Bucket</p>
+                  <p className="font-medium">{selectedTrade.timeBucket}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-gray-500">Position Size</p>
+                  <p className="font-medium">${(selectedTrade.exec?.size * selectedTrade.exec?.entry || 0).toLocaleString()}</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-gray-500">R Multiple</p>
+                  <p className={`font-medium ${selectedTrade.rr > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                    {selectedTrade.rr > 0 ? '+' : ''}{selectedTrade.rr}R
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* Plan vs Reality */}
             <h3 className="font-medium mb-3">Plan vs Reality</h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6">
@@ -493,7 +514,7 @@ const SmartJournal = () => {
             </div>
 
             {/* Tags */}
-            <div className="mb-4">
+            <div className="mb-6">
               <h3 className="font-medium mb-2">Tags</h3>
               <div className="flex flex-wrap gap-2">
                 {selectedTrade.tags?.map(tag => (
