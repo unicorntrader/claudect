@@ -226,7 +226,7 @@ const SmartJournal = () => {
     });
     if (misses.length)
       out.push({
-        msg: `Missed entries in ${(misses.length / last50.length) * 100
+        msg: `Missed entries in ${((misses.length / last50.length) * 100
           ).toFixed(0)}% of trades — refine timing`,
         type: 'negative',
       });
