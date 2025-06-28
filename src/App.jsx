@@ -8,6 +8,21 @@ function App() {
   const [activeModule, setActiveModule] = useState('dashboard');
   const [moduleOptions, setModuleOptions] = useState({});
 
+  // Real state logic for tradePlans, trades, and newPlan
+  const [tradePlans, setTradePlans] = useState([]);
+  const [trades, setTrades] = useState([]);
+  const [newPlan, setNewPlan] = useState({
+    ticker: '',
+    entry: '',
+    target: '',
+    stopLoss: '',
+    position: 'long',
+    quantity: '',
+    strategy: '',
+    autoWatch: false,
+    notes: '',
+  });
+
   const handleModuleChange = (module, options = {}) => {
     setActiveModule(module);
     setModuleOptions(options);
@@ -18,10 +33,10 @@ function App() {
       {activeModule === 'dashboard' && (
         <Dashboard
           handleModuleChange={handleModuleChange}
-          tradePlans={[]}
-          trades={[]}
-          notes={{}}
-          activities={[]}
+          tradePlans={tradePlans}
+          trades={trades}
+          notes={{}} // Placeholder for future notes system
+          activities={[]} // Placeholder for future activity feed
           highlightedItem={null}
           handlePlanClick={(planId) =>
             handleModuleChange('plan-trader', { editPlanId: planId })
@@ -32,12 +47,12 @@ function App() {
 
       {activeModule === 'plan-trader' && (
         <PlanTrader
-          tradePlans={[]}
-          setTradePlans={() => {}}
-          trades={[]}
-          setTrades={() => {}}
-          newPlan={{}}
-          setNewPlan={() => {}}
+          tradePlans={tradePlans}
+          setTradePlans={setTradePlans}
+          trades={trades}
+          setTrades={setTrades}
+          newPlan={newPlan}
+          setNewPlan={setNewPlan}
           highlightedItem={null}
           editPlanId={moduleOptions.editPlanId || null}
         />
@@ -45,8 +60,8 @@ function App() {
 
       {activeModule === 'smart-journal' && (
         <SmartJournal
-          trades={[]}
-          tradePlans={[]}
+          trades={trades}
+          tradePlans={tradePlans}
           highlightedItem={null}
           handleModuleChange={handleModuleChange}
         />
