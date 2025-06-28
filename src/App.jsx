@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
+import Header from './components/common/Header';
+import Navigation from './components/common/Navigation';
 import Dashboard from './components/dashboard/Dashboard';
 import PlanTrader from './components/trading/PlanTrader';
 import SmartJournal from './components/journal/SmartJournal';
+import { modules } from './utils/constants';
 
 function App() {
   const [activeModule, setActiveModule] = useState('dashboard');
   const [moduleOptions, setModuleOptions] = useState({});
-
-  // Real state logic for tradePlans, trades, and newPlan
   const [tradePlans, setTradePlans] = useState([]);
   const [trades, setTrades] = useState([]);
   const [newPlan, setNewPlan] = useState({
@@ -28,47 +29,52 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      {activeModule === 'dashboard' && (
-        <Dashboard
-          handleModuleChange={handleModuleChange}
-          tradePlans={tradePlans}
-          trades={trades}
-          notes={{}} // Placeholder for future notes system
-          activities={[]} // Placeholder for future activity feed
-          highlightedItem={null}
-          handlePlanClick={(planId) =>
-            handleModuleChange('plan-trader', { editPlanId: planId })
-          }
-          handleActivityClick={() => {}}
-        />
-      )}
+    <div className="min-h-screen bg-gray-100">
+      <Header />
+      <Navigation
+        modules={modules}
+        activeModule={activeModule}
+        onModuleChange={handleModuleChange}
+      />
 
-      {activeModule === 'plan-trader' && (
-        <PlanTrader
-          tradePlans={tradePlans}
-          setTradePlans={setTradePlans}
-          trades={trades}
-          setTrades={setTrades}
-          newPlan={newPlan}
-          setNewPlan={setNewPlan}
-          highlightedItem={null}
-          editPlanId={moduleOptions.editPlanId || null}
-        />
-      )}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {activeModule === 'dashboard' && (
+          <Dashboard
+            handleModuleChange={handleModuleChange}
+            tradePlans={tradePlans}
+            trades={trades}
+            notes={{}}
+            activities={[]}
+            highlightedItem={null}
+            handlePlanClick={(planId) =>
+              handleModuleChange('plan-trader', { editPlanId: planId })
+            }
+            handleActivityClick={() => {}}
+          />
+        )}
 
-      {activeModule === 'smart-journal' && (
-        <SmartJournal
-          trades={trades}
-          tradePlans={tradePlans}
-          highlightedItem={null}
-          handleModuleChange={handleModuleChange}
-        />
-      )}
+        {activeModule === 'plan-trader' && (
+          <PlanTrader
+            tradePlans={tradePlans}
+            setTradePlans={setTradePlans}
+            trades={trades}
+            setTrades={setTrades}
+            newPlan={newPlan}
+            setNewPlan={setNewPlan}
+            highlightedItem={null}
+            editPlanId={moduleOptions.editPlanId || null}
+          />
+        )}
 
-      {activeModule === 'journal' && (
-        <TradingJournal />
-      )}
+        {activeModule === 'smart-journal' && (
+          <SmartJournal
+            trades={trades}
+            tradePlans={tradePlans}
+            highlightedItem={null}
+            handleModuleChange={handleModuleChange}
+          />
+        )}
+      </main>
     </div>
   );
 }
