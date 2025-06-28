@@ -1,5 +1,5 @@
-// src/components/trading/PlanTrader.jsx
 import React, { useEffect } from 'react';
+import { PlusCircle, LineChart, Trash2 } from 'lucide-react';
 import { calculateRiskReward } from '../../utils/calculations';
 
 const PlanTrader = ({
@@ -10,7 +10,7 @@ const PlanTrader = ({
   newPlan,
   setNewPlan,
   highlightedItem,
-  editPlanId
+  editPlanId,
 }) => {
   useEffect(() => {
     if (editPlanId) {
@@ -25,7 +25,7 @@ const PlanTrader = ({
       const updatedPlan = {
         ...newPlan,
         timestamp: newPlan.timestamp || new Date().toISOString(),
-        status: newPlan.status || 'planned'
+        status: newPlan.status || 'planned',
       };
 
       let updatedPlans;
@@ -47,8 +47,29 @@ const PlanTrader = ({
         quantity: '',
         strategy: '',
         autoWatch: false,
-        notes: ''
+        notes: '',
       });
+    }
+  };
+
+  const deleteTradePlan = (id) =>
+    setTradePlans(tradePlans.filter((p) => p.id !== id));
+
+  const executeTradePlan = (planId) => {
+    const plan = tradePlans.find((p) => p.id === planId);
+    if (plan) {
+      const trade = {
+        id: Date.now(),
+        ...plan,
+        executeTime: new Date().toISOString(),
+        status: 'executed',
+      };
+      setTrades([...trades, trade]);
+      setTradePlans(
+        tradePlans.map((p) =>
+          p.id === planId ? { ...p, status: 'executed' } : p
+        )
+      );
     }
   };
 
@@ -60,102 +81,46 @@ const PlanTrader = ({
   );
 
   return (
-    <div className="max-w-5xl mx-auto p-6 bg-white shadow-md rounded-md">
-      <h2 className="text-xl font-semibold mb-4">Create New Trade Plan</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div style={{ padding: '20px', background: '#f4f4f4' }}>
+      <h2>Plan Trader</h2>
+      <div style={{ marginBottom: '20px' }}>
+        <label>Ticker:</label>
         <input
           type="text"
-          placeholder="Ticker Symbol"
           value={newPlan.ticker}
           onChange={(e) => setNewPlan({ ...newPlan, ticker: e.target.value })}
-          className="border p-2 rounded"
-        />
-
-        <div className="flex gap-2">
-          <button
-            className={`px-4 py-2 rounded ${newPlan.position === 'long' ? 'bg-green-200' : 'bg-gray-200'}`}
-            onClick={() => setNewPlan({ ...newPlan, position: 'long' })}
-          >
-            Long
-          </button>
-          <button
-            className={`px-4 py-2 rounded ${newPlan.position === 'short' ? 'bg-red-200' : 'bg-gray-200'}`}
-            onClick={() => setNewPlan({ ...newPlan, position: 'short' })}
-          >
-            Short
-          </button>
-        </div>
-
+        /><br/>
+        <label>Entry:</label>
         <input
           type="number"
-          placeholder="Entry Price"
           value={newPlan.entry}
           onChange={(e) => setNewPlan({ ...newPlan, entry: e.target.value })}
-          className="border p-2 rounded"
-        />
+        /><br/>
+        <label>Target:</label>
         <input
           type="number"
-          placeholder="Target Price"
           value={newPlan.target}
           onChange={(e) => setNewPlan({ ...newPlan, target: e.target.value })}
-          className="border p-2 rounded"
-        />
+        /><br/>
+        <label>Stop Loss:</label>
         <input
           type="number"
-          placeholder="Stop Loss"
           value={newPlan.stopLoss}
           onChange={(e) => setNewPlan({ ...newPlan, stopLoss: e.target.value })}
-          className="border p-2 rounded"
-        />
-        <input
-          type="number"
-          placeholder="Quantity (e.g. 1000 or -1000)"
-          value={newPlan.quantity}
-          onChange={(e) => setNewPlan({ ...newPlan, quantity: e.target.value })}
-          className="border p-2 rounded"
-        />
-
-        <select
-          value={newPlan.strategy}
-          onChange={(e) => setNewPlan({ ...newPlan, strategy: e.target.value })}
-          className="border p-2 rounded"
-        >
-          <option value="">Select Strategy</option>
-          <option value="Breakout">Breakout</option>
-          <option value="Reversal">Reversal</option>
-          <option value="Momentum">Momentum</option>
-        </select>
-
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={newPlan.autoWatch}
-            onChange={(e) => setNewPlan({ ...newPlan, autoWatch: e.target.checked })}
-          />
-          Enable Smart Watch
-        </label>
+        /><br/>
+        <button onClick={addTradePlan}>Add Plan</button>
       </div>
 
-      <div className="mt-4">
-        <textarea
-          placeholder="Notes"
-          value={newPlan.notes}
-          onChange={(e) => setNewPlan({ ...newPlan, notes: e.target.value })}
-          className="border p-2 rounded w-full"
-        />
-      </div>
-
-      <div className="mt-6 flex justify-between items-center">
-        <div className="text-sm text-gray-600">
-          Risk/Reward Ratio: <strong>{riskReward}</strong>
-        </div>
-        <button
-          onClick={addTradePlan}
-          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
-        >
-          + Add Trade Plan
-        </button>
-      </div>
+      <h3>Planned Trades</h3>
+      <ul>
+        {tradePlans.map((plan) => (
+          <li key={plan.id}>
+            <strong>{plan.ticker}</strong> — Entry: {plan.entry} | Target: {plan.target} | SL: {plan.stopLoss}
+            <button onClick={() => executeTradePlan(plan.id)}>Execute</button>
+            <button onClick={() => deleteTradePlan(plan.id)}>Delete</button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };
