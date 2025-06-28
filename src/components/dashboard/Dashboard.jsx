@@ -92,6 +92,16 @@ const Dashboard = ({
                   }`}>
                     {plan.status}
                   </span>
+                  {plan.autoWatch && (
+                    <span className="ml-2 px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-800">
+                      Smart Watch
+                    </span>
+                  )}
+                  {plan.strategy && (
+                    <span className="ml-2 px-2 py-1 text-xs rounded bg-gray-100 text-gray-800">
+                      {plan.strategy}
+                    </span>
+                  )}
                 </div>
                 <div className="text-sm text-gray-600">
                   R/R: {calculateRiskReward(plan.entry, plan.target, plan.stopLoss, plan.position).ratio}
