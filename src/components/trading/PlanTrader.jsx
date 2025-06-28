@@ -1,6 +1,5 @@
-// components/trading/PlanTrader.jsx
+// src/components/trading/PlanTrader.jsx
 import React, { useEffect } from 'react';
-import { PlusCircle, LineChart, Trash2 } from 'lucide-react';
 import { calculateRiskReward } from '../../utils/calculations';
 
 const PlanTrader = ({
@@ -11,7 +10,7 @@ const PlanTrader = ({
   newPlan,
   setNewPlan,
   highlightedItem,
-  editPlanId,
+  editPlanId
 }) => {
   useEffect(() => {
     if (editPlanId) {
@@ -26,7 +25,7 @@ const PlanTrader = ({
       const updatedPlan = {
         ...newPlan,
         timestamp: newPlan.timestamp || new Date().toISOString(),
-        status: newPlan.status || 'planned',
+        status: newPlan.status || 'planned'
       };
 
       let updatedPlans;
@@ -48,29 +47,8 @@ const PlanTrader = ({
         quantity: '',
         strategy: '',
         autoWatch: false,
-        notes: '',
+        notes: ''
       });
-    }
-  };
-
-  const deleteTradePlan = (id) =>
-    setTradePlans(tradePlans.filter((p) => p.id !== id));
-
-  const executeTradePlan = (planId) => {
-    const plan = tradePlans.find((p) => p.id === planId);
-    if (plan) {
-      const trade = {
-        id: Date.now(),
-        ...plan,
-        executeTime: new Date().toISOString(),
-        status: 'executed',
-      };
-      setTrades([...trades, trade]);
-      setTradePlans(
-        tradePlans.map((p) =>
-          p.id === planId ? { ...p, status: 'executed' } : p
-        )
-      );
     }
   };
 
@@ -82,128 +60,101 @@ const PlanTrader = ({
   );
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="max-w-5xl mx-auto p-6 bg-white shadow-md rounded-md">
+      <h2 className="text-xl font-semibold mb-4">Create New Trade Plan</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <input
-          className="p-2 border rounded"
-          placeholder="Ticker"
+          type="text"
+          placeholder="Ticker Symbol"
           value={newPlan.ticker}
           onChange={(e) => setNewPlan({ ...newPlan, ticker: e.target.value })}
+          className="border p-2 rounded"
         />
+
+        <div className="flex gap-2">
+          <button
+            className={`px-4 py-2 rounded ${newPlan.position === 'long' ? 'bg-green-200' : 'bg-gray-200'}`}
+            onClick={() => setNewPlan({ ...newPlan, position: 'long' })}
+          >
+            Long
+          </button>
+          <button
+            className={`px-4 py-2 rounded ${newPlan.position === 'short' ? 'bg-red-200' : 'bg-gray-200'}`}
+            onClick={() => setNewPlan({ ...newPlan, position: 'short' })}
+          >
+            Short
+          </button>
+        </div>
+
         <input
-          className="p-2 border rounded"
-          placeholder="Entry"
+          type="number"
+          placeholder="Entry Price"
           value={newPlan.entry}
           onChange={(e) => setNewPlan({ ...newPlan, entry: e.target.value })}
+          className="border p-2 rounded"
         />
         <input
-          className="p-2 border rounded"
-          placeholder="Target"
+          type="number"
+          placeholder="Target Price"
           value={newPlan.target}
           onChange={(e) => setNewPlan({ ...newPlan, target: e.target.value })}
+          className="border p-2 rounded"
         />
         <input
-          className="p-2 border rounded"
+          type="number"
           placeholder="Stop Loss"
           value={newPlan.stopLoss}
           onChange={(e) => setNewPlan({ ...newPlan, stopLoss: e.target.value })}
+          className="border p-2 rounded"
         />
         <input
-          className="p-2 border rounded"
-          placeholder="Quantity"
+          type="number"
+          placeholder="Quantity (e.g. 1000 or -1000)"
           value={newPlan.quantity}
           onChange={(e) => setNewPlan({ ...newPlan, quantity: e.target.value })}
+          className="border p-2 rounded"
         />
+
         <select
-          className="p-2 border rounded"
-          value={newPlan.position}
-          onChange={(e) => setNewPlan({ ...newPlan, position: e.target.value })}
-        >
-          <option value="long">Long</option>
-          <option value="short">Short</option>
-        </select>
-        <select
-          className="p-2 border rounded"
           value={newPlan.strategy}
           onChange={(e) => setNewPlan({ ...newPlan, strategy: e.target.value })}
+          className="border p-2 rounded"
         >
           <option value="">Select Strategy</option>
           <option value="Breakout">Breakout</option>
-          <option value="Mean Reversion">Mean Reversion</option>
-          <option value="Opening Range">Opening Range</option>
-          <option value="Double Top/Bottom">Double Top/Bottom</option>
+          <option value="Reversal">Reversal</option>
+          <option value="Momentum">Momentum</option>
         </select>
-        <label className="flex items-center space-x-2">
+
+        <label className="flex items-center gap-2">
           <input
             type="checkbox"
             checked={newPlan.autoWatch}
             onChange={(e) => setNewPlan({ ...newPlan, autoWatch: e.target.checked })}
           />
-          <span>Enable Smart Watch</span>
+          Enable Smart Watch
         </label>
+      </div>
+
+      <div className="mt-4">
         <textarea
-          className="p-2 border rounded col-span-2"
           placeholder="Notes"
           value={newPlan.notes}
           onChange={(e) => setNewPlan({ ...newPlan, notes: e.target.value })}
+          className="border p-2 rounded w-full"
         />
       </div>
 
-      <div className="flex items-center space-x-4">
-        <button
-          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-          onClick={addTradePlan}
-        >
-          <PlusCircle className="w-4 h-4 mr-2" />
-          {editPlanId ? 'Update Plan' : 'Add Plan'}
-        </button>
+      <div className="mt-6 flex justify-between items-center">
         <div className="text-sm text-gray-600">
-          Risk/Reward Ratio: <strong>{riskReward.ratio}</strong>
+          Risk/Reward Ratio: <strong>{riskReward}</strong>
         </div>
-      </div>
-
-      <div className="border-t pt-4 space-y-2">
-        {tradePlans.length === 0 ? (
-          <div className="text-sm text-gray-500">No trade plans yet.</div>
-        ) : (
-          tradePlans.map(plan => (
-            <div
-              key={plan.id}
-              className={`p-3 border rounded flex justify-between items-center ${
-                plan.status === 'executed' ? 'bg-green-50' : 'bg-gray-50'
-              }`}
-            >
-              <div>
-                <div className="font-semibold">{plan.ticker} ({plan.position})</div>
-                <div className="text-sm text-gray-600">
-                  Entry: {plan.entry}, Target: {plan.target}, Stop: {plan.stopLoss}, Qty: {plan.quantity}
-                </div>
-                <div className="text-sm text-gray-500">
-                  Strategy: {plan.strategy || '—'} | R/R: {calculateRiskReward(plan.entry, plan.target, plan.stopLoss, plan.position).ratio}
-                </div>
-                {plan.autoWatch && (
-                  <div className="text-xs text-yellow-700 mt-1">📡 Smart Watch Active</div>
-                )}
-              </div>
-              <div className="flex space-x-2">
-                <button
-                  onClick={() => executeTradePlan(plan.id)}
-                  className="p-1 rounded bg-green-100 hover:bg-green-200"
-                  title="Mark as Executed"
-                >
-                  <LineChart className="w-4 h-4 text-green-700" />
-                </button>
-                <button
-                  onClick={() => deleteTradePlan(plan.id)}
-                  className="p-1 rounded bg-red-100 hover:bg-red-200"
-                  title="Delete Plan"
-                >
-                  <Trash2 className="w-4 h-4 text-red-700" />
-                </button>
-              </div>
-            </div>
-          ))
-        )}
+        <button
+          onClick={addTradePlan}
+          className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+        >
+          + Add Trade Plan
+        </button>
       </div>
     </div>
   );
