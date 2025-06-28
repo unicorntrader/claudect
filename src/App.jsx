@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import TradingJournal from './TradingJournal';
 import Dashboard from './components/dashboard/Dashboard';
 import PlanTrader from './components/trading/PlanTrader';
 import SmartJournal from './components/journal/SmartJournal';
