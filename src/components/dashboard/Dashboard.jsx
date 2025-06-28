@@ -77,72 +77,84 @@ const Dashboard = ({
             <ChevronRight className="h-5 w-5 text-gray-400 group-hover:text-blue-500 transition-colors" />
           </h3>
           <div className="space-y-3">
-            {tradePlans.slice(-5).map(plan => (
-              <div 
-                key={plan.id} 
-                className={`flex items-center justify-between p-3 rounded cursor-pointer hover:bg-blue-50 transition-colors ${
-                  highlightedItem === plan.id ? 'bg-blue-100 border border-blue-300' : 'bg-gray-50'
-                }`}
-                onClick={() => handlePlanClick(plan.id)}
-              >
-                <div>
-                  <span className="font-medium">{plan.ticker}</span>
-                  <span className={`ml-2 px-2 py-1 text-xs rounded ${
-                    plan.status === 'executed' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
-                  }`}>
-                    {plan.status}
-                  </span>
-                  {plan.autoWatch && (
-                    <span className="ml-2 px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-800">
-                      Smart Watch
+            {tradePlans.length > 0 ? (
+              tradePlans.slice(-5).map(plan => (
+                <div 
+                  key={plan.id} 
+                  className={`flex items-center justify-between p-3 rounded cursor-pointer hover:bg-blue-50 transition-colors ${
+                    highlightedItem === plan.id ? 'bg-blue-100 border border-blue-300' : 'bg-gray-50'
+                  }`}
+                  onClick={() => handlePlanClick(plan.id)}
+                >
+                  <div>
+                    <span className="font-medium">{plan.ticker}</span>
+                    <span className={`ml-2 px-2 py-1 text-xs rounded ${
+                      plan.status === 'executed' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                    }`}>
+                      {plan.status}
                     </span>
-                  )}
-                  {plan.strategy && (
-                    <span className="ml-2 px-2 py-1 text-xs rounded bg-gray-100 text-gray-800">
-                      {plan.strategy}
-                    </span>
-                  )}
+                    {plan.autoWatch && (
+                      <span className="ml-2 px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-800">
+                        Smart Watch
+                      </span>
+                    )}
+                    {plan.strategy && (
+                      <span className="ml-2 px-2 py-1 text-xs rounded bg-gray-100 text-gray-800">
+                        {plan.strategy}
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    R/R: {calculateRiskReward(plan.entry, plan.target, plan.stopLoss, plan.position).ratio}
+                  </div>
                 </div>
-                <div className="text-sm text-gray-600">
-                  R/R: {calculateRiskReward(plan.entry, plan.target, plan.stopLoss, plan.position).ratio}
-                </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-gray-500 text-sm text-center py-6">
+                No trade plans yet. Create one from the Plan Trader module.
+              </p>
+            )}
           </div>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-semibold mb-4">Activity Feed</h3>
           <div className="space-y-3">
-            {activities.slice(0, 6).map(activity => (
-              <div 
-                key={activity.id} 
-                className="flex items-start space-x-3 p-2 rounded cursor-pointer hover:bg-gray-50 transition-colors group"
-                onClick={() => handleActivityClick(activity)}
-              >
-                <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
-                  activity.type === 'plan' ? 'bg-blue-500' :
-                  activity.type === 'trade' ? 'bg-green-500' :
-                  activity.type === 'note' ? 'bg-purple-500' :
-                  activity.type === 'system' ? 'bg-orange-500' :
-                  'bg-gray-500'
-                }`} />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-gray-900 group-hover:text-blue-600 transition-colors">
-                    {activity.message}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    {new Date(activity.timestamp).toLocaleString([], {
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </p>
+            {activities.length > 0 ? (
+              activities.slice(0, 6).map(activity => (
+                <div 
+                  key={activity.id} 
+                  className="flex items-start space-x-3 p-2 rounded cursor-pointer hover:bg-gray-50 transition-colors group"
+                  onClick={() => handleActivityClick(activity)}
+                >
+                  <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
+                    activity.type === 'plan' ? 'bg-blue-500' :
+                    activity.type === 'trade' ? 'bg-green-500' :
+                    activity.type === 'note' ? 'bg-purple-500' :
+                    activity.type === 'system' ? 'bg-orange-500' :
+                    'bg-gray-500'
+                  }`} />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-gray-900 group-hover:text-blue-600 transition-colors">
+                      {activity.message}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(activity.timestamp).toLocaleString([], {
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  </div>
+                  <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
                 </div>
-                <ChevronRight className="h-4 w-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-gray-500 text-sm text-center py-6">
+                No recent activity. Your trades and notes will appear here.
+              </p>
+            )}
           </div>
         </div>
       </div>
