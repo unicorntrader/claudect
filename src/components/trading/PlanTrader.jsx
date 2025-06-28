@@ -1,5 +1,5 @@
+// components/trading/PlanTrader.jsx
 import React, { useEffect } from 'react';
-import { PlusCircle, LineChart, Trash2 } from 'lucide-react';
 import { calculateRiskReward } from '../../utils/calculations';
 
 const PlanTrader = ({
@@ -81,46 +81,35 @@ const PlanTrader = ({
   );
 
   return (
-    <div style={{ padding: '20px', background: '#f4f4f4' }}>
-      <h2>Plan Trader</h2>
+    <div style={{ padding: '20px' }}>
+      <h2>Plan Your Trade</h2>
       <div style={{ marginBottom: '20px' }}>
-        <label>Ticker:</label>
-        <input
-          type="text"
-          value={newPlan.ticker}
-          onChange={(e) => setNewPlan({ ...newPlan, ticker: e.target.value })}
-        /><br/>
-        <label>Entry:</label>
-        <input
-          type="number"
-          value={newPlan.entry}
-          onChange={(e) => setNewPlan({ ...newPlan, entry: e.target.value })}
-        /><br/>
-        <label>Target:</label>
-        <input
-          type="number"
-          value={newPlan.target}
-          onChange={(e) => setNewPlan({ ...newPlan, target: e.target.value })}
-        /><br/>
-        <label>Stop Loss:</label>
-        <input
-          type="number"
-          value={newPlan.stopLoss}
-          onChange={(e) => setNewPlan({ ...newPlan, stopLoss: e.target.value })}
-        /><br/>
-        <button onClick={addTradePlan}>Add Plan</button>
+        <input placeholder="Ticker" value={newPlan.ticker} onChange={(e) => setNewPlan({ ...newPlan, ticker: e.target.value })} />
+        <input placeholder="Entry" value={newPlan.entry} onChange={(e) => setNewPlan({ ...newPlan, entry: e.target.value })} />
+        <input placeholder="Target" value={newPlan.target} onChange={(e) => setNewPlan({ ...newPlan, target: e.target.value })} />
+        <input placeholder="Stop Loss" value={newPlan.stopLoss} onChange={(e) => setNewPlan({ ...newPlan, stopLoss: e.target.value })} />
+        <input placeholder="Quantity" value={newPlan.quantity} onChange={(e) => setNewPlan({ ...newPlan, quantity: e.target.value })} />
+        <input placeholder="Strategy" value={newPlan.strategy} onChange={(e) => setNewPlan({ ...newPlan, strategy: e.target.value })} />
+        <label>
+          Auto Watch:
+          <input type="checkbox" checked={newPlan.autoWatch} onChange={(e) => setNewPlan({ ...newPlan, autoWatch: e.target.checked })} />
+        </label>
+        <textarea placeholder="Notes" value={newPlan.notes} onChange={(e) => setNewPlan({ ...newPlan, notes: e.target.value })}></textarea>
+        <button onClick={addTradePlan}>Add / Save Plan</button>
       </div>
 
-      <h3>Planned Trades</h3>
+      <h3>Trade Plans</h3>
       <ul>
         {tradePlans.map((plan) => (
           <li key={plan.id}>
-            <strong>{plan.ticker}</strong> — Entry: {plan.entry} | Target: {plan.target} | SL: {plan.stopLoss}
+            <strong>{plan.ticker}</strong> - Entry: {plan.entry}, Target: {plan.target}, Stop: {plan.stopLoss}
             <button onClick={() => executeTradePlan(plan.id)}>Execute</button>
             <button onClick={() => deleteTradePlan(plan.id)}>Delete</button>
           </li>
         ))}
       </ul>
+
+      <p>Risk/Reward: {riskReward}</p>
     </div>
   );
 };
