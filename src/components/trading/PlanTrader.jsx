@@ -1,5 +1,7 @@
 // components/trading/PlanTrader.jsx
 import React, { useEffect } from 'react';
+import { PlusCircle, LineChart, Trash2 } from 'lucide-react';
+import { calculateRiskReward } from '../../utils/calculations';
 
 const PlanTrader = ({
   tradePlans,
@@ -13,24 +15,28 @@ const PlanTrader = ({
 }) => {
   useEffect(() => {
     if (editPlanId) {
-      const planToEdit = tradePlans.find((p) => p.id === editPlanId);
+      const planToEdit = tradePlans.find(p => p.id === editPlanId);
       if (planToEdit) setNewPlan(planToEdit);
     }
   }, [editPlanId, tradePlans]);
 
   const addTradePlan = () => {
     if (newPlan.ticker && newPlan.entry && newPlan.target && newPlan.stopLoss) {
+      const existingIndex = tradePlans.findIndex(p => p.id === newPlan.id);
       const updatedPlan = {
         ...newPlan,
-        id: newPlan.id || Date.now(),
         timestamp: newPlan.timestamp || new Date().toISOString(),
         status: newPlan.status || 'planned',
       };
 
-      const exists = tradePlans.some((p) => p.id === updatedPlan.id);
-      const updatedPlans = exists
-        ? tradePlans.map((p) => (p.id === updatedPlan.id ? updatedPlan : p))
-        : [...tradePlans, updatedPlan];
+      let updatedPlans;
+      if (existingIndex !== -1) {
+        updatedPlans = [...tradePlans];
+        updatedPlans[existingIndex] = updatedPlan;
+      } else {
+        updatedPlan.id = Date.now();
+        updatedPlans = [...tradePlans, updatedPlan];
+      }
 
       setTradePlans(updatedPlans);
       setNewPlan({
@@ -47,32 +53,13 @@ const PlanTrader = ({
     }
   };
 
-  const deleteTradePlan = (id) => {
-    setTradePlans(tradePlans.filter((p) => p.id !== id));
-  };
-
-  const executeTradePlan = (planId) => {
-    const plan = tradePlans.find((p) => p.id === planId);
-    if (plan) {
-      const trade = {
-        ...plan,
-        id: Date.now(),
-        executeTime: new Date().toISOString(),
-        status: 'executed',
-      };
-      setTrades([...trades, trade]);
-      setTradePlans(
-        tradePlans.map((p) =>
-          p.id === planId ? { ...p, status: 'executed' } : p
-        )
-      );
-    }
-  };
+  const deleteTradePlan = (id) =>
+    setTradePlans(tradePlans.filter((plan) => plan.id !== id));
 
   return (
-    <div style={{ padding: '30px' }}>
-      <h2>Plan Trader</h2>
-      <div style={{ marginBottom: '20px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <div>
+        <h2>New Trade Plan</h2>
         <input
           placeholder="Ticker"
           value={newPlan.ticker}
@@ -89,47 +76,58 @@ const PlanTrader = ({
           onChange={(e) => setNewPlan({ ...newPlan, target: e.target.value })}
         />
         <input
-          placeholder="Stop"
+          placeholder="Stop Loss"
           value={newPlan.stopLoss}
           onChange={(e) => setNewPlan({ ...newPlan, stopLoss: e.target.value })}
         />
         <input
-          placeholder="Qty"
+          placeholder="Quantity"
           value={newPlan.quantity}
           onChange={(e) => setNewPlan({ ...newPlan, quantity: e.target.value })}
         />
-        <select
+        <input
+          placeholder="Strategy"
           value={newPlan.strategy}
           onChange={(e) => setNewPlan({ ...newPlan, strategy: e.target.value })}
-        >
-          <option value="">Select Strategy</option>
-          <option value="Breakout">Breakout</option>
-          <option value="Mean Reversion">Mean Reversion</option>
-          <option value="Momentum">Momentum</option>
-        </select>
+        />
         <label>
           <input
             type="checkbox"
             checked={newPlan.autoWatch}
-            onChange={(e) =>
-              setNewPlan({ ...newPlan, autoWatch: e.target.checked })
-            }
+            onChange={(e) => setNewPlan({ ...newPlan, autoWatch: e.target.checked })}
           />
           Smart Watch
         </label>
-        <button onClick={addTradePlan}>Save Plan</button>
+        <textarea
+          placeholder="Notes"
+          value={newPlan.notes}
+          onChange={(e) => setNewPlan({ ...newPlan, notes: e.target.value })}
+        />
+        <button onClick={addTradePlan}>
+          <PlusCircle size={16} /> Save Plan
+        </button>
       </div>
 
       <div>
+        <h3>Saved Trade Plans</h3>
         {tradePlans.map((plan) => (
-          <div key={plan.id} style={{ marginBottom: '10px' }}>
-            <strong>{plan.ticker}</strong> | {plan.entry} → {plan.target} | SL: {plan.stopLoss}
-            <span> | Strategy: {plan.strategy} | Smart Watch: {plan.autoWatch ? '✅' : '❌'}</span>
+          <div
+            key={plan.id}
+            style={{
+              border: '1px solid #ccc',
+              padding: '0.5rem',
+              marginBottom: '0.5rem',
+              backgroundColor: highlightedItem === plan.id ? '#eef' : '#fff',
+            }}
+          >
             <div>
-              <button onClick={() => setNewPlan(plan)}>Edit</button>
-              <button onClick={() => deleteTradePlan(plan.id)}>Delete</button>
-              <button onClick={() => executeTradePlan(plan.id)}>Execute</button>
+              <strong>{plan.ticker}</strong> ({plan.position}) – RR: {calculateRiskReward(plan)}
             </div>
+            <div>Strategy: {plan.strategy}</div>
+            <div>Watch: {plan.autoWatch ? 'Yes' : 'No'}</div>
+            <button onClick={() => deleteTradePlan(plan.id)}>
+              <Trash2 size={14} /> Delete
+            </button>
           </div>
         ))}
       </div>
