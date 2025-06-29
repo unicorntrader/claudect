@@ -1,119 +1,138 @@
-// src/App.jsx
-import React, { useState } from 'react';
-import Header from './components/common/Header';
-import Navigation from './components/common/Navigation';
-import Dashboard from './components/dashboard/Dashboard';
-import PlanTrader from './components/trading/PlanTrader';
-import SmartJournal from './components/journal/SmartJournal';
-import DailyView from './components/daily/DailyView';
-import Notebook from './components/notebook/Notebook';
-import Performance from './components/performance/Performance';
-import { modules } from './utils/constants';
+// components/trading/PlanTrader.jsx
+import React, { useEffect } from 'react';
+import { PlusCircle, LineChart, Trash2 } from 'lucide-react';
+import { calculateRiskReward } from '../../utils/calculations';
 
-function App() {
-  const [activeModule, setActiveModule] = useState('dashboard');
-  const [moduleOptions, setModuleOptions] = useState({});
-  const [tradePlans, setTradePlans] = useState([]);
-  const [trades, setTrades] = useState([]);
-  const [notes, setNotes] = useState({});
-  const [activities, setActivities] = useState([]);
-  const [highlightedItem, setHighlightedItem] = useState(null);
-  const [expandedDays, setExpandedDays] = useState({});
-  const [showNotePreviews, setShowNotePreviews] = useState(false);
+const PlanTrader = ({
+  tradePlans,
+  setTradePlans,
+  trades,
+  setTrades,
+  newPlan,
+  setNewPlan,
+  highlightedItem,
+  editPlanId,
+}) => {
+  useEffect(() => {
+    if (editPlanId) {
+      const planToEdit = tradePlans.find(p => p.id === editPlanId);
+      if (planToEdit) setNewPlan(planToEdit);
+    }
+  }, [editPlanId, tradePlans]);
 
-  const [newPlan, setNewPlan] = useState({
-    ticker: '',
-    entry: '',
-    target: '',
-    stopLoss: '',
-    position: 'long',
-    quantity: '',
-    strategy: '',
-    autoWatch: false,
-    notes: '',
-  });
+  const addTradePlan = () => {
+    if (newPlan.ticker && newPlan.entry && newPlan.target && newPlan.stopLoss) {
+      const existingIndex = tradePlans.findIndex(p => p.id === newPlan.id);
+      const updatedPlan = {
+        ...newPlan,
+        timestamp: newPlan.timestamp || new Date().toISOString(),
+        status: newPlan.status || 'planned',
+      };
 
-  const handleModuleChange = (module, options = {}) => {
-    setActiveModule(module);
-    setModuleOptions(options);
+      let updatedPlans;
+      if (existingIndex !== -1) {
+        updatedPlans = [...tradePlans];
+        updatedPlans[existingIndex] = updatedPlan;
+      } else {
+        updatedPlan.id = Date.now();
+        updatedPlans = [...tradePlans, updatedPlan];
+      }
+
+      setTradePlans(updatedPlans);
+      setNewPlan({
+        ticker: '',
+        entry: '',
+        target: '',
+        stopLoss: '',
+        position: 'long',
+        quantity: '',
+        strategy: '',
+        autoWatch: false,
+        notes: '',
+      });
+    }
   };
 
+  const deleteTradePlan = (id) =>
+    setTradePlans(tradePlans.filter((plan) => plan.id !== id));
+
   return (
-    <div className="min-h-screen bg-gray-100">
-      <Header />
-      <Navigation
-        modules={modules}
-        activeModule={activeModule}
-        onModuleChange={handleModuleChange}
-      />
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {activeModule === 'dashboard' && (
-          <Dashboard
-            handleModuleChange={handleModuleChange}
-            tradePlans={tradePlans}
-            trades={trades}
-            notes={notes}
-            activities={activities}
-            highlightedItem={highlightedItem}
-            handlePlanClick={(planId) =>
-              handleModuleChange('plan-trader', { editPlanId: planId })
-            }
-            handleActivityClick={() => {}}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      <div>
+        <h2>New Trade Plan</h2>
+        <input
+          placeholder="Ticker"
+          value={newPlan.ticker}
+          onChange={(e) => setNewPlan({ ...newPlan, ticker: e.target.value })}
+        />
+        <input
+          placeholder="Entry"
+          value={newPlan.entry}
+          onChange={(e) => setNewPlan({ ...newPlan, entry: e.target.value })}
+        />
+        <input
+          placeholder="Target"
+          value={newPlan.target}
+          onChange={(e) => setNewPlan({ ...newPlan, target: e.target.value })}
+        />
+        <input
+          placeholder="Stop Loss"
+          value={newPlan.stopLoss}
+          onChange={(e) => setNewPlan({ ...newPlan, stopLoss: e.target.value })}
+        />
+        <input
+          placeholder="Quantity"
+          value={newPlan.quantity}
+          onChange={(e) => setNewPlan({ ...newPlan, quantity: e.target.value })}
+        />
+        <input
+          placeholder="Strategy"
+          value={newPlan.strategy}
+          onChange={(e) => setNewPlan({ ...newPlan, strategy: e.target.value })}
+        />
+        <label>
+          <input
+            type="checkbox"
+            checked={newPlan.autoWatch}
+            onChange={(e) => setNewPlan({ ...newPlan, autoWatch: e.target.checked })}
           />
-        )}
+          Smart Watch
+        </label>
+        <textarea
+          placeholder="Notes"
+          value={newPlan.notes}
+          onChange={(e) => setNewPlan({ ...newPlan, notes: e.target.value })}
+        />
+        <button onClick={addTradePlan}>
+          <PlusCircle size={16} /> Save Plan
+        </button>
+      </div>
 
-        {activeModule === 'plan-trader' && (
-          <PlanTrader
-            tradePlans={tradePlans}
-            setTradePlans={setTradePlans}
-            trades={trades}
-            setTrades={setTrades}
-            newPlan={newPlan}
-            setNewPlan={setNewPlan}
-            highlightedItem={highlightedItem}
-            editPlanId={moduleOptions.editPlanId || null}
-          />
-        )}
-
-        {activeModule === 'smart-journal' && (
-          <SmartJournal
-            trades={trades}
-            tradePlans={tradePlans}
-            highlightedItem={highlightedItem}
-            handleModuleChange={handleModuleChange}
-          />
-        )}
-
-        {activeModule === 'daily-view' && (
-          <DailyView
-            tradePlans={tradePlans}
-            trades={trades}
-            notes={notes}
-            setNotes={setNotes}
-            expandedDays={expandedDays}
-            setExpandedDays={setExpandedDays}
-            highlightedItem={highlightedItem}
-            showNotePreviews={showNotePreviews}
-            setShowNotePreviews={setShowNotePreviews}
-            handleModuleChange={handleModuleChange}
-          />
-        )}
-
-        {activeModule === 'notebook' && (
-          <Notebook
-            notes={notes}
-            setNotes={setNotes}
-            handleModuleChange={handleModuleChange}
-          />
-        )}
-
-        {activeModule === 'performance' && (
-          <Performance trades={trades} />
-        )}
-      </main>
+      <div>
+        <h3>Saved Trade Plans</h3>
+        {tradePlans.map((plan) => (
+          <div
+            key={plan.id}
+            style={{
+              border: '1px solid #ccc',
+              padding: '0.5rem',
+              marginBottom: '0.5rem',
+              backgroundColor: highlightedItem === plan.id ? '#eef' : '#fff',
+            }}
+          >
+            <div>
+              <strong>{plan.ticker}</strong> ({plan.position}) – RR: {calculateRiskReward(plan)}
+            </div>
+            <div>Strategy: {plan.strategy}</div>
+            <div>Watch: {plan.autoWatch ? 'Yes' : 'No'}</div>
+            <button onClick={() => deleteTradePlan(plan.id)}>
+              <Trash2 size={14} /> Delete
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
-}
+};
 
-export default App;
+export default PlanTrader;
