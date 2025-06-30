@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { calculateRiskReward } from '../../utils/calculations';
-import { addData } from '../../utils/data'; // assuming shared state via custom store
 
 const PlanTrader = () => {
   const [ticker, setTicker] = useState('');
@@ -41,9 +40,7 @@ const PlanTrader = () => {
       notes,
       ...rr
     };
-    addData('tradePlans', plan);
     console.log('Plan saved:', plan);
-    // Optionally clear form or trigger confirmation
   };
 
   return (
