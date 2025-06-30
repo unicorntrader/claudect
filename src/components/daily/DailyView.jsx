@@ -1,6 +1,7 @@
 // components/daily/DailyView.jsx
 import React from 'react';
 import { Calendar, Edit3, ChevronRight } from 'lucide-react';
+import { calculateRiskReward } from '../../utils/calculations';
 
 const DailyView = ({ 
   trades, 
@@ -12,16 +13,6 @@ const DailyView = ({
   setShowNotePreviews, 
   openNotePopup 
 }) => {
-  
-  // Inline function to replace the problematic import
-  const calculateRiskReward = (entry, target, stop, position) => {
-    const risk = Math.abs(entry - stop);
-    const reward = Math.abs(target - entry);
-    return { 
-      ratio: risk > 0 ? (reward / risk).toFixed(2) : '0.00'
-    };
-  };
-
   const toggleDay = (date) => {
     setExpandedDays(prev => ({
       ...prev,
