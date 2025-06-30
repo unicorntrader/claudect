@@ -1,138 +1,91 @@
-// components/trading/PlanTrader.jsx
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { calculateRiskReward } from '../../../utils/calculations';
 
-const PlanTrader = ({
-  tradePlans,
-  setTradePlans,
-  trades,
-  setTrades,
-  newPlan,
-  setNewPlan,
-  highlightedItem,
-  editPlanId,
-}) => {
+const PlanTrader = () => {
+  const [ticker, setTicker] = useState('');
+  const [entry, setEntry] = useState('');
+  const [stop, setStop] = useState('');
+  const [target, setTarget] = useState('');
+  const [size, setSize] = useState('');
+  const [rr, setRR] = useState(null);
+
   useEffect(() => {
-    if (editPlanId) {
-      const planToEdit = tradePlans.find((p) => p.id === editPlanId);
-      if (planToEdit) setNewPlan(planToEdit);
+    if (entry && stop && target) {
+      const parsed = calculateRiskReward(parseFloat(entry), parseFloat(stop), parseFloat(target));
+      setRR(parsed);
+    } else {
+      setRR(null);
     }
-  }, [editPlanId, tradePlans]);
+  }, [entry, stop, target]);
 
-  const addTradePlan = () => {
-    if (newPlan.ticker && newPlan.entry && newPlan.target && newPlan.stopLoss) {
-      const updatedPlan = {
-        ...newPlan,
-        id: newPlan.id || Date.now(),
-        timestamp: newPlan.timestamp || new Date().toISOString(),
-        status: newPlan.status || 'planned',
-      };
-
-      const exists = tradePlans.some((p) => p.id === updatedPlan.id);
-      const updatedPlans = exists
-        ? tradePlans.map((p) => (p.id === updatedPlan.id ? updatedPlan : p))
-        : [...tradePlans, updatedPlan];
-
-      setTradePlans(updatedPlans);
-      setNewPlan({
-        ticker: '',
-        entry: '',
-        target: '',
-        stopLoss: '',
-        position: 'long',
-        quantity: '',
-        strategy: '',
-        autoWatch: false,
-        notes: '',
-      });
-    }
-  };
-
-  const deleteTradePlan = (id) => {
-    setTradePlans(tradePlans.filter((p) => p.id !== id));
-  };
-
-  const executeTradePlan = (planId) => {
-    const plan = tradePlans.find((p) => p.id === planId);
-    if (plan) {
-      const trade = {
-        ...plan,
-        id: Date.now(),
-        executeTime: new Date().toISOString(),
-        status: 'executed',
-      };
-      setTrades([...trades, trade]);
-      setTradePlans(
-        tradePlans.map((p) =>
-          p.id === planId ? { ...p, status: 'executed' } : p
-        )
-      );
-    }
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const plan = {
+      ticker,
+      entry,
+      stop,
+      target,
+      size,
+      ...rr
+    };
+    console.log('Trade Plan Submitted:', plan);
   };
 
   return (
-    <div style={{ padding: '30px' }}>
-      <h2>Plan Trader</h2>
-      <div style={{ marginBottom: '20px' }}>
+    <div className="p-4">
+      <h2 className="text-xl font-bold mb-4">Plan Trader</h2>
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 max-w-md">
         <input
+          type="text"
           placeholder="Ticker"
-          value={newPlan.ticker}
-          onChange={(e) => setNewPlan({ ...newPlan, ticker: e.target.value })}
+          value={ticker}
+          onChange={(e) => setTicker(e.target.value)}
+          className="border p-2 rounded"
         />
         <input
-          placeholder="Entry"
-          value={newPlan.entry}
-          onChange={(e) => setNewPlan({ ...newPlan, entry: e.target.value })}
+          type="number"
+          placeholder="Entry Price"
+          value={entry}
+          onChange={(e) => setEntry(e.target.value)}
+          className="border p-2 rounded"
         />
         <input
-          placeholder="Target"
-          value={newPlan.target}
-          onChange={(e) => setNewPlan({ ...newPlan, target: e.target.value })}
+          type="number"
+          placeholder="Stop Loss"
+          value={stop}
+          onChange={(e) => setStop(e.target.value)}
+          className="border p-2 rounded"
         />
         <input
-          placeholder="Stop"
-          value={newPlan.stopLoss}
-          onChange={(e) => setNewPlan({ ...newPlan, stopLoss: e.target.value })}
+          type="number"
+          placeholder="Target Price"
+          value={target}
+          onChange={(e) => setTarget(e.target.value)}
+          className="border p-2 rounded"
         />
         <input
-          placeholder="Qty"
-          value={newPlan.quantity}
-          onChange={(e) => setNewPlan({ ...newPlan, quantity: e.target.value })}
+          type="number"
+          placeholder="Position Size"
+          value={size}
+          onChange={(e) => setSize(e.target.value)}
+          className="border p-2 rounded"
         />
-        <select
-          value={newPlan.strategy}
-          onChange={(e) => setNewPlan({ ...newPlan, strategy: e.target.value })}
-        >
-          <option value="">Select Strategy</option>
-          <option value="Breakout">Breakout</option>
-          <option value="Mean Reversion">Mean Reversion</option>
-          <option value="Momentum">Momentum</option>
-        </select>
-        <label>
-          <input
-            type="checkbox"
-            checked={newPlan.autoWatch}
-            onChange={(e) =>
-              setNewPlan({ ...newPlan, autoWatch: e.target.checked })
-            }
-          />
-          Smart Watch
-        </label>
-        <button onClick={addTradePlan}>Save Plan</button>
-      </div>
 
-      <div>
-        {tradePlans.map((plan) => (
-          <div key={plan.id} style={{ marginBottom: '10px' }}>
-            <strong>{plan.ticker}</strong> | {plan.entry} → {plan.target} | SL: {plan.stopLoss}
-            <span> | Strategy: {plan.strategy} | Smart Watch: {plan.autoWatch ? '✅' : '❌'}</span>
-            <div>
-              <button onClick={() => setNewPlan(plan)}>Edit</button>
-              <button onClick={() => deleteTradePlan(plan.id)}>Delete</button>
-              <button onClick={() => executeTradePlan(plan.id)}>Execute</button>
-            </div>
+        {rr && (
+          <div className="text-sm text-gray-700">
+            <p>Risk: {rr.risk}</p>
+            <p>Reward: {rr.reward}</p>
+            <p>R/R Ratio: {rr.ratio}</p>
           </div>
-        ))}
-      </div>
+        )}
+
+        <button
+          type="submit"
+          className="bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
+        >
+          Submit Plan
+        </button>
+      </form>
     </div>
   );
 };
