@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { calculateRiskReward } from '../../../utils/calculations';
+import { calculateRiskReward } from '../../utils/calculations';
 
 const PlanTrader = () => {
   const [ticker, setTicker] = useState('');
