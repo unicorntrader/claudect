@@ -1,4 +1,3 @@
-// src/components/trading/PlanTrader.jsx
 import React, { useEffect } from 'react';
 import { PlusCircle, Trash2 } from 'lucide-react';
 import { calculateRiskReward } from '../../utils/calculations';
