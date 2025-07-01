@@ -1,155 +1,99 @@
-// File: src/components/trading/PlanTrader.jsx
-
 import React, { useState } from 'react';
+import { getData, setData } from '@/utils/sharedState';
 
 const PlanTrader = () => {
-  const [ticker, setTicker] = useState('');
-  const [direction, setDirection] = useState('LONG');
-  const [entry, setEntry] = useState('');
-  const [target, setTarget] = useState('');
-  const [stop, setStop] = useState('');
-  const [quantity, setQuantity] = useState('');
-  const [notes, setNotes] = useState('');
-  const [strategy, setStrategy] = useState('');
-  const [smartWatch, setSmartWatch] = useState(false);
-  const [plans, setPlans] = useState([]);
+  const [form, setForm] = useState({
+    ticker: '',
+    direction: 'LONG',
+    entry: '',
+    target: '',
+    stop: '',
+    quantity: '',
+    notes: ''
+  });
 
-  const handleAddPlan = () => {
-    const newPlan = {
-      ticker,
-      direction,
-      entry,
-      target,
-      stop,
-      quantity,
-      notes,
-      strategy,
-      smartWatch,
-    };
-    setPlans([...plans, newPlan]);
+  const [plans, setPlans] = useState(getData('plans') || []);
 
-    // Reset
-    setTicker('');
-    setDirection('LONG');
-    setEntry('');
-    setTarget('');
-    setStop('');
-    setQuantity('');
-    setNotes('');
-    setStrategy('');
-    setSmartWatch(false);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm({ ...form, [name]: value });
+  };
+
+  const calculateRR = () => {
+    const entry = parseFloat(form.entry);
+    const stop = parseFloat(form.stop);
+    const target = parseFloat(form.target);
+
+    const risk = Math.abs(entry - stop) || 0;
+    const reward = Math.abs(target - entry) || 0;
+    const ratio = risk === 0 ? '1:0' : `${(reward / risk).toFixed(2)}:1`;
+
+    return { risk, reward, ratio };
+  };
+
+  const { risk, reward, ratio } = calculateRR();
+
+  const addPlan = () => {
+    const newPlan = { ...form };
+    const updated = [...plans, newPlan];
+    setPlans(updated);
+    setData('plans', updated);
+    setForm({ ticker: '', direction: 'LONG', entry: '', target: '', stop: '', quantity: '', notes: '' });
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <h2 className="text-2xl font-bold text-gray-900">Plan Your Trade</h2>
-
-      {/* Top input section */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <input
-          type="text"
-          placeholder="Ticker"
-          value={ticker}
-          onChange={(e) => setTicker(e.target.value)}
-          className="border rounded px-4 py-2 w-full text-sm"
-        />
-        <select
-          value={direction}
-          onChange={(e) => setDirection(e.target.value)}
-          className="border rounded px-4 py-2 w-full text-sm"
-        >
-          <option value="LONG">Long</option>
-          <option value="SHORT">Short</option>
-        </select>
-        <input
-          type="number"
-          placeholder="Entry"
-          value={entry}
-          onChange={(e) => setEntry(e.target.value)}
-          className="border rounded px-4 py-2 w-full text-sm"
-        />
-        <input
-          type="number"
-          placeholder="Target"
-          value={target}
-          onChange={(e) => setTarget(e.target.value)}
-          className="border rounded px-4 py-2 w-full text-sm"
-        />
-        <input
-          type="number"
-          placeholder="Stop"
-          value={stop}
-          onChange={(e) => setStop(e.target.value)}
-          className="border rounded px-4 py-2 w-full text-sm"
-        />
-        <input
-          type="number"
-          placeholder="Quantity"
-          value={quantity}
-          onChange={(e) => setQuantity(e.target.value)}
-          className="border rounded px-4 py-2 w-full text-sm"
-        />
-        <input
-          type="text"
-          placeholder="Strategy (e.g., Breakout)"
-          value={strategy}
-          onChange={(e) => setStrategy(e.target.value)}
-          className="border rounded px-4 py-2 w-full text-sm"
-        />
-        <label className="flex items-center gap-2 text-sm col-span-2 md:col-span-1">
-          <input
-            type="checkbox"
-            checked={smartWatch}
-            onChange={(e) => setSmartWatch(e.target.checked)}
-          />
-          Enable Smart Watch
-        </label>
-        <textarea
-          placeholder="Notes"
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          className="col-span-2 border rounded px-4 py-2 w-full text-sm"
-          rows={3}
-        />
-      </div>
-
-      {/* Add button */}
-      <div>
-        <button
-          onClick={handleAddPlan}
-          className="bg-black text-white px-5 py-2 rounded shadow hover:bg-gray-800 transition"
-        >
-          Add Trade Plan
-        </button>
-      </div>
-
-      {/* Placeholder for chart */}
-      <div className="bg-gray-100 border rounded p-4 text-center text-gray-500">
-        TradingView Chart Placeholder
-      </div>
-
-      {/* Active plans */}
-      <div className="mt-6">
-        <h3 className="text-lg font-semibold mb-3">Active Plans</h3>
-        <div className="space-y-3">
-          {plans.map((plan, idx) => (
-            <div key={idx} className="border rounded p-4 bg-white shadow-sm">
-              <div className="flex justify-between font-medium">
-                <span>{plan.ticker} ({plan.direction})</span>
-                <span>Qty: {plan.quantity}</span>
-              </div>
-              <div className="text-sm text-gray-700 mt-1">
-                Entry: {plan.entry} | Target: {plan.target} | Stop: {plan.stop}
-              </div>
-              <div className="text-sm text-gray-600 mt-1">
-                Strategy: {plan.strategy} | Smart Watch: {plan.smartWatch ? 'ON' : 'OFF'}
-              </div>
-              {plan.notes && (
-                <div className="mt-2 text-sm italic text-gray-500">{plan.notes}</div>
-              )}
-            </div>
-          ))}
+    <div className="p-6">
+      <h2 className="text-xl font-semibold mb-4">Create New Trade Plan</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div>
+          <input name="ticker" placeholder="Ticker Symbol" className="w-full mb-2 border p-2" value={form.ticker} onChange={handleChange} />
+          <div className="flex gap-2 mb-2">
+            <button onClick={() => setForm({ ...form, direction: 'LONG' })} className={`px-4 py-2 rounded ${form.direction === 'LONG' ? 'bg-green-200' : 'bg-gray-200'}`}>Long</button>
+            <button onClick={() => setForm({ ...form, direction: 'SHORT' })} className={`px-4 py-2 rounded ${form.direction === 'SHORT' ? 'bg-red-200' : 'bg-gray-200'}`}>Short</button>
+          </div>
+          <input name="entry" placeholder="Entry Price" className="w-full mb-2 border p-2" value={form.entry} onChange={handleChange} />
+          <input name="target" placeholder="Target Price" className="w-full mb-2 border p-2" value={form.target} onChange={handleChange} />
+          <input name="stop" placeholder="Stop Loss" className="w-full mb-2 border p-2" value={form.stop} onChange={handleChange} />
+          <input name="quantity" placeholder="Quantity (1000 or -1000)" className="w-full mb-2 border p-2" value={form.quantity} onChange={handleChange} />
         </div>
+
+        <div className="bg-gray-50 p-4 rounded border">
+          <h4 className="font-semibold mb-2">Risk/Reward Analysis</h4>
+          <p>Risk per share: ${risk}</p>
+          <p>Reward per share: ${reward}</p>
+          <p className="font-bold text-red-500">Risk/Reward Ratio: {ratio}</p>
+          <textarea
+            name="notes"
+            placeholder="Trade rationale, setup details, etc."
+            className="w-full mt-4 border p-2"
+            rows={4}
+            value={form.notes}
+            onChange={handleChange}
+          />
+          <button onClick={addPlan} className="mt-4 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">
+            ➕ Add Trade Plan
+          </button>
+        </div>
+      </div>
+
+      <div className="my-10">
+        <h3 className="text-lg font-semibold mb-2">Trading Chart</h3>
+        <div className="bg-white border p-10 text-center text-gray-500">
+          <p>TradingView Advanced Charting</p>
+          <p className="text-blue-500">Currently viewing: {form.ticker || 'N/A'}</p>
+        </div>
+      </div>
+
+      <div>
+        <h3 className="text-lg font-semibold mb-2">Active Trade Plans</h3>
+        {plans.map((p, i) => (
+          <div key={i} className="mb-4 border p-4 bg-white rounded shadow-sm">
+            <p className="font-bold">
+              {p.ticker} <span className="uppercase text-green-600">{p.direction}</span> <span className="text-gray-500">planned</span>
+            </p>
+            <p>Entry: ${p.entry} | Target: ${p.target} | Stop: ${p.stop} | R/R: {calculateRR().ratio}</p>
+          </div>
+        ))}
       </div>
     </div>
   );
