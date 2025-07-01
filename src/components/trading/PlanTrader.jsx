@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { getData, setData } from '@/utils/sharedState';
+import { setData, getData } from '../../utils/sharedState';
 
 const PlanTrader = () => {
   const [form, setForm] = useState({
