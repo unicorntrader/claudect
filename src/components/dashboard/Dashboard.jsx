@@ -1,18 +1,25 @@
 import React from 'react';
-import { Target, CheckCircle, BookOpen, Activity, Calendar, TrendingUp, Edit3, ChevronRight, UploadCloud } from 'lucide-react';
+import {
+  Target,
+  CheckCircle,
+  BookOpen,
+  Activity,
+  Calendar,
+  TrendingUp,
+  Edit3,
+  ChevronRight,
+  UploadCloud,
+} from 'lucide-react';
 import MetricCard from '../common/MetricCard';
 import { getCurrentDate, calculateRiskReward } from '../../utils/calculations';
+import { getData } from '../../utils/sharedState';
 
-const Dashboard = ({ 
-  tradePlans, 
-  trades, 
-  notes, 
-  activities, 
-  highlightedItem, 
-  handleActivityClick, 
-  handlePlanClick, 
-  handleModuleChange 
-}) => {
+const Dashboard = ({ highlightedItem, handleActivityClick, handlePlanClick, handleModuleChange }) => {
+  const tradePlans = getData('plans') || [];
+  const trades = getData('trades') || [];
+  const notes = getData('notes') || {};
+  const activities = getData('activities') || [];
+
   const handleMetricClick = (metric) => {
     switch (metric) {
       case 'active-plans':
@@ -38,7 +45,7 @@ const Dashboard = ({
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <MetricCard
           title="Active Plans"
-          value={tradePlans.filter(p => p.status === 'planned').length}
+          value={tradePlans.filter((p) => p.status === 'planned').length}
           icon={Target}
           color="blue"
           onClick={() => handleMetricClick('active-plans')}
@@ -59,17 +66,17 @@ const Dashboard = ({
         />
         <MetricCard
           title="Today's Activity"
-          value={tradePlans.filter(p => p.timestamp.startsWith(getCurrentDate())).length}
+          value={tradePlans.filter((p) => p.timestamp?.startsWith(getCurrentDate())).length}
           icon={Activity}
           color="orange"
           onClick={() => handleMetricClick('today-activity')}
         />
       </div>
 
-      {/* Recent Plans and Activity Feed */}
+      {/* Recent Plans */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h3 
+          <h3
             className="text-lg font-semibold mb-4 cursor-pointer hover:text-blue-600 transition-colors flex items-center justify-between group"
             onClick={() => handleModuleChange('plan-trader')}
           >
@@ -78,37 +85,50 @@ const Dashboard = ({
           </h3>
           <div className="space-y-3">
             {tradePlans.length > 0 ? (
-              tradePlans.slice(-5).map(plan => (
-                <div 
-                  key={plan.id} 
-                  className={`flex items-center justify-between p-3 rounded cursor-pointer hover:bg-blue-50 transition-colors ${
-                    highlightedItem === plan.id ? 'bg-blue-100 border border-blue-300' : 'bg-gray-50'
-                  }`}
-                  onClick={() => handlePlanClick(plan.id)}
-                >
-                  <div>
-                    <span className="font-medium">{plan.ticker}</span>
-                    <span className={`ml-2 px-2 py-1 text-xs rounded ${
-                      plan.status === 'executed' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      {plan.status}
-                    </span>
-                    {plan.autoWatch && (
-                      <span className="ml-2 px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-800">
-                        Smart Watch
+              tradePlans
+                .slice(-5)
+                .reverse()
+                .map((plan) => (
+                  <div
+                    key={plan.id}
+                    className={`flex items-center justify-between p-3 rounded cursor-pointer hover:bg-blue-50 transition-colors ${
+                      highlightedItem === plan.id ? 'bg-blue-100 border border-blue-300' : 'bg-gray-50'
+                    }`}
+                    onClick={() => handlePlanClick(plan.id)}
+                  >
+                    <div>
+                      <span className="font-medium">{plan.ticker}</span>
+                      <span
+                        className={`ml-2 px-2 py-1 text-xs rounded ${
+                          plan.status === 'executed'
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-blue-100 text-blue-800'
+                        }`}
+                      >
+                        {plan.status || 'planned'}
                       </span>
-                    )}
-                    {plan.strategy && (
-                      <span className="ml-2 px-2 py-1 text-xs rounded bg-gray-100 text-gray-800">
-                        {plan.strategy}
-                      </span>
-                    )}
+                      {plan.autoWatch && (
+                        <span className="ml-2 px-2 py-1 text-xs rounded bg-yellow-100 text-yellow-800">
+                          Smart Watch
+                        </span>
+                      )}
+                      {plan.strategy && (
+                        <span className="ml-2 px-2 py-1 text-xs rounded bg-gray-100 text-gray-800">
+                          {plan.strategy}
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      R/R:{' '}
+                      {calculateRiskReward(
+                        plan.entry,
+                        plan.target,
+                        plan.stopLoss || plan.stop,
+                        plan.position || plan.quantity
+                      ).ratio}
+                    </div>
                   </div>
-                  <div className="text-sm text-gray-600">
-                    R/R: {calculateRiskReward(plan.entry, plan.target, plan.stopLoss, plan.position).ratio}
-                  </div>
-                </div>
-              ))
+                ))
             ) : (
               <p className="text-gray-500 text-sm text-center py-6">
                 No trade plans yet. Create one from the Plan Trader module.
@@ -117,23 +137,30 @@ const Dashboard = ({
           </div>
         </div>
 
+        {/* Activity Feed */}
         <div className="bg-white p-6 rounded-lg shadow-md">
           <h3 className="text-lg font-semibold mb-4">Activity Feed</h3>
           <div className="space-y-3">
             {activities.length > 0 ? (
-              activities.slice(0, 6).map(activity => (
-                <div 
-                  key={activity.id} 
+              activities.slice(0, 6).map((activity) => (
+                <div
+                  key={activity.id}
                   className="flex items-start space-x-3 p-2 rounded cursor-pointer hover:bg-gray-50 transition-colors group"
                   onClick={() => handleActivityClick(activity)}
                 >
-                  <div className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
-                    activity.type === 'plan' ? 'bg-blue-500' :
-                    activity.type === 'trade' ? 'bg-green-500' :
-                    activity.type === 'note' ? 'bg-purple-500' :
-                    activity.type === 'system' ? 'bg-orange-500' :
-                    'bg-gray-500'
-                  }`} />
+                  <div
+                    className={`w-2 h-2 rounded-full mt-2 flex-shrink-0 ${
+                      activity.type === 'plan'
+                        ? 'bg-blue-500'
+                        : activity.type === 'trade'
+                        ? 'bg-green-500'
+                        : activity.type === 'note'
+                        ? 'bg-purple-500'
+                        : activity.type === 'system'
+                        ? 'bg-orange-500'
+                        : 'bg-gray-500'
+                    }`}
+                  />
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-gray-900 group-hover:text-blue-600 transition-colors">
                       {activity.message}
@@ -143,7 +170,7 @@ const Dashboard = ({
                         month: 'short',
                         day: 'numeric',
                         hour: '2-digit',
-                        minute: '2-digit'
+                        minute: '2-digit',
                       })}
                     </p>
                   </div>
@@ -194,7 +221,7 @@ const Dashboard = ({
         </div>
       </div>
 
-      {/* Import Trades Placeholder */}
+      {/* Import Placeholder */}
       <div className="bg-white p-6 rounded-lg shadow-md">
         <h3 className="text-lg font-semibold mb-2 flex items-center">
           <UploadCloud className="h-5 w-5 text-gray-500 mr-2" /> Import Trades
